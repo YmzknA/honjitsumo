@@ -2,9 +2,15 @@ class UsersController < ApplicationController
   before_action :authenticate_user!, only: %i[show]
 
   def show
-    @user = User.find(params[:id])
-    @user_posts = @user.posts.order(created_at: :desc)
+    @user = User.find_by(id: params[:id])
+
+    if @user.nil?
+      redirect_to posts_path, notice: 'ユーザーが見つかりません'
+      return
+    end
+
     check_user(@user)
+    @user_posts = @user.posts.order(created_at: :desc)
 
     return unless @user_posts.present?
 
