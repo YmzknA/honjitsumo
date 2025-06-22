@@ -16,13 +16,16 @@ class PostsController < ApplicationController
 
   def create
     @post = Post.new(post_params)
+    @post.user = current_user
+    @post.name = current_user.name
 
     if @post.save
       @post.broadcast_prepend_later_to('posts_channel')
       @post_content = @post.option == '0' ? '本日も張り切って！' : '本日はこの辺で'
       flash.now[:notice] = '投稿しました'
     else
-      render :index, status: :unprocessable_entity
+      flash[:alert] = '投稿に失敗しました'
+      redirect_to posts_path, status: :unprocessable_entity
     end
   end
 
@@ -39,7 +42,7 @@ class PostsController < ApplicationController
   end
 
   def post_params
-    params.require(:post).permit(:name, :option, :user_id)
+    params.require(:post).permit(:option)
   end
 
   def check_user(post)
